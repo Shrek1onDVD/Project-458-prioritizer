@@ -95,5 +95,6 @@ with st.expander("ℹ️ Classification Criteria (AI uses these hints)"):
     """)
 
 # --- FOOTER ---
-st.markdown("---")
-st.caption("🚨 This app is a prototype using fictional data and GPT-4. No real cases or sensitive information are processed.")
+st.markdown("Demo that classifies fictional youth care cases into urgency levels using AI (powered by GPT-3.5).")
+st.caption("🚨 This app is a prototype using fictional data and GPT-3.5. No real cases or sensitive information are processed.")
+
