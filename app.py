@@ -63,7 +63,7 @@ if submitted:
     with st.spinner("Classifying via AI..."):
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You classify youth care intake cases by urgency."},
                     {"role": "user", "content": prompt}
