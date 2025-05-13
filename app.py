@@ -31,21 +31,21 @@ with st.form("intake_form"):
     st.subheader("📋 Intakeformulier")
 
     # Region & Availability (mocked for now)
-    region = st.selectbox("Regio", list(REGIONS.keys()))
-    st.markdown(f"**Beschikbare plekken in {region}:** {REGIONS[region]}")
+    region = st.selectbox("Regio", list(REGIONS.keys()), index=-1)  # Start with an empty dropdown
+    st.markdown(f"**Beschikbare plekken in {region if region else 'de geselecteerde regio'}**: {REGIONS.get(region, 0)}")
 
     # Core inputs
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Leeftijd van het kind", 0, 18, 10)
-        submission_date = st.date_input("Datum van aanmelding", value=date.today())  # Changed field name
+        submission_date = st.date_input("Datum van aanmelding", value=date.today())  # Date format adjustment
     with col2:
         main_issue = st.selectbox("Hoofdhulpvraag", [
             "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
             "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"
-        ])
+        ], index=-1)  # Start with an empty dropdown
         
-        # Display text box if "Anders" is selected
+        # Show text box if "Anders" is selected
         if main_issue == "Anders":
             other_issue = st.text_input("Beschrijf de hulpvraag (optioneel)")
 
@@ -53,9 +53,9 @@ with st.form("intake_form"):
     col3, col4 = st.columns(2)
     with col3:
         family_support = st.radio("Mate van steun vanuit gezin", ["Hoog", "Gemiddeld", "Laag"])
-        family_complexity = st.selectbox("Complexiteit gezinssituatie", ["Laag", "Gemiddeld", "Hoog"])
+        family_complexity = st.selectbox("Complexiteit gezinssituatie", ["Laag", "Gemiddeld", "Hoog"], index=-1)  # Start with an empty dropdown
     with col4:
-        risk_level = st.selectbox("Risico-inschatting", ["Laag", "Matig", "Hoog"])
+        risk_level = st.selectbox("Risico-inschatting", ["Laag", "Matig", "Hoog"], index=-1)  # Start with an empty dropdown
         prior_interventions = st.radio("Eerdere hulpverlening gehad?", ["Ja", "Nee"])
 
     # Referral details
@@ -63,9 +63,9 @@ with st.form("intake_form"):
     with col5:
         referral_type = st.selectbox("Verwijzer", [
             "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
-        ])
+        ], index=-1)  # Start with an empty dropdown
         
-        # Display text box if "Anders" is selected
+        # Show text box if "Anders" is selected
         if referral_type == "Anders":
             other_referral = st.text_input("Beschrijf de verwijzer (optioneel)")
     with col6:
