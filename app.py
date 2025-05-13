@@ -1,8 +1,8 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 
-# CONFIG
-client = OpenAI(api_key="skXXXXXXXXXX")  # Replace with your OpenAI key
+# CONFIG - Use your API key from Streamlit secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.set_page_config(page_title="Jeugdzorg AI Prioritizer", layout="centered")
 st.title("🔍 Jeugdzorg AI - Intake Prioritizer (Demo)")
@@ -12,7 +12,6 @@ st.markdown("Demo that classifies fictional youth care cases into urgency levels
 with st.form("intake_form"):
     st.subheader("1. Case Information")
 
-    # Example case filler
     st.markdown("💡 Choose a fictional case to autofill:")
     example = st.selectbox("Fictional Case", ["—", "Abuse case (Emma, 7)", "School dropout (Mike, 15)"])
 
@@ -63,15 +62,15 @@ if submitted:
 
     with st.spinner("Classifying via AI..."):
         try:
-            response = client.chat.completions.create(
-                model="gpt-4-turbo",
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You classify youth care intake cases by urgency."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=200
             )
-            output = response.choices[0].message.content.strip()
+            output = response["choices"][0]["message"]["content"].strip()
             st.success("✅ Case classified:")
             st.text(output)
 
