@@ -36,7 +36,10 @@ with st.form("intake_form"):
             "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
             "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"
         ])
-        incident_location = st.text_input("Locatie incident (optioneel)")
+        
+        # Display text box if "Anders" is selected
+        if main_issue == "Anders":
+            other_issue = st.text_input("Beschrijf de hulpvraag (optioneel)")
 
     # Family & risk factors
     col3, col4 = st.columns(2)
@@ -53,6 +56,10 @@ with st.form("intake_form"):
         referral_type = st.selectbox("Verwijzer", [
             "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
         ])
+        
+        # Display text box if "Anders" is selected
+        if referral_type == "Anders":
+            other_referral = st.text_input("Beschrijf de verwijzer (optioneel)")
     with col6:
         referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
 
@@ -70,14 +77,14 @@ if submitted:
     case = {
         "region": region,
         "age": age,
-        "issue": main_issue,
+        "issue": main_issue if main_issue != "Anders" else other_issue,
         "incident_date": str(incident_date),
         "incident_location": incident_location,
         "family_support": family_support,
         "family_complexity": family_complexity,
         "risk_level": risk_level,
         "prior_interventions": prior_interventions,
-        "referral_type": referral_type,
+        "referral_type": referral_type if referral_type != "Anders" else other_referral,
         "referral_clarity": referral_clarity,
         "extra_notes": extra_notes
     }
