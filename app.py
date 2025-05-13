@@ -6,12 +6,20 @@ from datetime import date
 # CONFIG - Use your API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Mock region-based bed availability (replace with actual API later)
+# Complete list of regions (replace with real data when available)
 REGIONS = {
     "Noord-Holland": 3,
     "Zuid-Holland": 1,
     "Utrecht": 0,
-    "Gelderland": 2
+    "Gelderland": 2,
+    "Friesland": 4,
+    "Drenthe": 1,
+    "Overijssel": 3,
+    "Flevoland": 2,
+    "Limburg": 3,
+    "Zeeland": 1,
+    "Noord-Brabant": 2,
+    "Amsterdam": 5
 }
 
 st.set_page_config(page_title="Jeugdzorg AI Prioritizer", layout="centered")
@@ -30,7 +38,7 @@ with st.form("intake_form"):
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Leeftijd van het kind", 0, 18, 10)
-        incident_date = st.date_input("Datum incident (optioneel)", value=date.today())
+        submission_date = st.date_input("Datum van aanmelding", value=date.today())  # Changed field name
     with col2:
         main_issue = st.selectbox("Hoofdhulpvraag", [
             "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
@@ -78,8 +86,7 @@ if submitted:
         "region": region,
         "age": age,
         "issue": main_issue if main_issue != "Anders" else other_issue,
-        "incident_date": str(incident_date),
-        "incident_location": incident_location,
+        "submission_date": str(submission_date),  # Changed field name
         "family_support": family_support,
         "family_complexity": family_complexity,
         "risk_level": risk_level,
