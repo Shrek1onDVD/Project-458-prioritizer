@@ -50,16 +50,27 @@ if submitted:
     """
 
     prompt = f"""
-    You are a Jeugdzorg AI assistant. Based on the case below, return:
+    You are a Jeugdzorg AI assistant. Your task is to classify the **urgency** of a fictional youth care intake based on structured indicators.
 
-    - Urgency: High / Medium / Low  
-    - Reason: 1-2 sentences why  
-    - Recommended Action: Next step for care worker
-
-    Case:
-    {case_description}
-    """
-
+        Use this logic:
+        - Age < 12 → increases urgency
+        - Issue = "Abuse", "Neglect", "Violence" → increases urgency
+        - Family support = "Low" → increases urgency
+        - Risk level = "High" → strongly increases urgency
+        - More than 2 of the above factors = HIGH urgency
+        - Only 1 = MEDIUM urgency
+        - None = LOW urgency
+        
+        Respond in this strict format:
+    
+        Urgency: [High / Medium / Low]  
+        Reason: [1-2 sentence explanation referencing factors above]  
+        Recommended Action: [Brief next step suitable for a care team]
+        
+        Case:
+        {case_description}
+        """
+    
     with st.spinner("Classifying via AI..."):
         try:
             response = openai.chat.completions.create(
@@ -71,6 +82,21 @@ if submitted:
                 max_tokens=200
             )
             output = response["choices"][0]["message"]["content"].strip()
+            # Extract urgency line (e.g. "Urgency: High")
+            urgency_line = output.split("\n")[0]
+            urgency = urgency_line.split(":")[1].strip()
+            
+            # Visual indicator based on urgency
+            urgency_color = {
+                "High": "🔴",
+                "Medium": "🟠",
+                "Low": "🟢"
+            }
+            emoji = urgency_color.get(urgency, "⚪")
+            
+            # Display urgency visually
+            st.markdown(f"### {emoji} Urgency: **{urgency}**")
+
             st.success("✅ Case classified:")
             st.text(output)
 
