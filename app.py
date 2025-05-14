@@ -3,35 +3,28 @@ import openai
 import json
 from datetime import date
 
-# CONFIG - Use your API key from Streamlit secrets
+# CONFIG
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Complete list of regions (replace with real data when available)
+# Regions (mocked)
 REGIONS = {
-    "Noord-Holland": 3,
-    "Zuid-Holland": 1,
-    "Utrecht": 0,
-    "Gelderland": 2,
-    "Friesland": 4,
-    "Drenthe": 1,
-    "Overijssel": 3,
-    "Flevoland": 2,
-    "Limburg": 3,
-    "Zeeland": 1,
-    "Noord-Brabant": 2,
-    "Amsterdam": 5
+    "Noord-Holland": 3, "Zuid-Holland": 1, "Utrecht": 0, "Gelderland": 2,
+    "Friesland": 4, "Drenthe": 1, "Overijssel": 3, "Flevoland": 2,
+    "Limburg": 3, "Zeeland": 1, "Noord-Brabant": 2, "Amsterdam": 5
 }
 
 st.set_page_config(page_title="Jeugdzorg AI Prioritizer", layout="centered")
 st.title("🔍 Jeugdzorg AI - Intake Prioritizer (Demo)")
 st.markdown("Dit prototype simuleert een AI-ondersteund intakeproces in de jeugdzorg.")
 
-# --- FORM INPUTS ---
 with st.form("intake_form"):
     st.subheader("📋 Intakeformulier")
 
-    region = st.selectbox("Regio", list(REGIONS.keys()), index=-1)
-    st.markdown(f"**Beschikbare plekken in {region if region else 'de geselecteerde regio'}**: {REGIONS.get(region, 0)}")
+    # Dropdown with empty default option
+    region_options = [""] + list(REGIONS.keys())
+    region = st.selectbox("Regio", region_options)
+    if region:
+        st.markdown(f"**Beschikbare plekken in {region}**: {REGIONS.get(region, 0)}")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -39,25 +32,27 @@ with st.form("intake_form"):
         submission_date = st.date_input("Datum van aanmelding", value=date.today())
     with col2:
         main_issue = st.selectbox("Hoofdhulpvraag", [
-            "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
+            "", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
             "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"
-        ], index=-1)
+        ])
+        other_issue = ""
         if main_issue == "Anders":
             other_issue = st.text_input("Beschrijf de hulpvraag (optioneel)")
 
     col3, col4 = st.columns(2)
     with col3:
         family_support = st.radio("Mate van steun vanuit gezin", ["Hoog", "Gemiddeld", "Laag"])
-        family_complexity = st.selectbox("Complexiteit gezinssituatie", ["Laag", "Gemiddeld", "Hoog"], index=-1)
+        family_complexity = st.selectbox("Complexiteit gezinssituatie", ["", "Laag", "Gemiddeld", "Hoog"])
     with col4:
-        risk_level = st.selectbox("Risico-inschatting", ["Laag", "Matig", "Hoog"], index=-1)
+        risk_level = st.selectbox("Risico-inschatting", ["", "Laag", "Matig", "Hoog"])
         prior_interventions = st.radio("Eerdere hulpverlening gehad?", ["Ja", "Nee"])
 
     col5, col6 = st.columns(2)
     with col5:
         referral_type = st.selectbox("Verwijzer", [
-            "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
-        ], index=-1)
+            "", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
+        ])
+        other_referral = ""
         if referral_type == "Anders":
             other_referral = st.text_input("Beschrijf de verwijzer (optioneel)")
     with col6:
@@ -65,51 +60,46 @@ with st.form("intake_form"):
 
     extra_notes = st.text_area("Overige opmerkingen of signalen (optioneel)")
 
-    if not main_issue or not family_support or not risk_level:
-        st.warning("Zorg ervoor dat alle verplichte velden ingevuld zijn.")
-
     submitted = st.form_submit_button("🔍 Classificeer urgentie")
 
-# --- GPT-4o MINI CLASSIFICATION ---
+# --- GPT-4o MINI ---
 if submitted:
-    case = {
-        "region": region,
-        "age": age,
-        "issue": main_issue if main_issue != "Anders" else other_issue,
-        "submission_date": str(submission_date),
-        "family_support": family_support,
-        "family_complexity": family_complexity,
-        "risk_level": risk_level,
-        "prior_interventions": prior_interventions,
-        "referral_type": referral_type if referral_type != "Anders" else other_referral,
-        "referral_clarity": referral_clarity,
-        "extra_notes": extra_notes
-    }
-    case_description = "\n".join(f"{k}: {v}" for k, v in case.items())
+    if not main_issue or not family_support or not risk_level:
+        st.warning("Zorg ervoor dat alle verplichte velden ingevuld zijn.")
+    else:
+        case = {
+            "region": region,
+            "age": age,
+            "issue": main_issue if main_issue != "Anders" else other_issue,
+            "submission_date": str(submission_date),
+            "family_support": family_support,
+            "family_complexity": family_complexity,
+            "risk_level": risk_level,
+            "prior_interventions": prior_interventions,
+            "referral_type": referral_type if referral_type != "Anders" else other_referral,
+            "referral_clarity": referral_clarity,
+            "extra_notes": extra_notes
+        }
+        case_description = "\n".join(f"{k}: {v}" for k, v in case.items())
 
-    prompt = f"""
+        prompt = f"""
 Je bent een AI-assistent gespecialiseerd in het beoordelen van urgentie bij intakegevallen binnen de jeugdzorg. Classificeer onderstaande casus nauwkeurig op basis van specifieke criteria:
 
 Gebruik hierbij deze gedetailleerde richtlijnen:
 
 1. Leeftijd:
    - Kind jonger dan 12 jaar verhoogt de urgentie.
-
 2. Type hulpvraag:
    - Mishandeling, Verwaarlozing, Huiselijk geweld verhogen sterk de urgentie.
    - Psychische problemen ouder en Weggelopen kind verhogen de urgentie matig.
-
 3. Mate van steun vanuit gezin:
    - Laag verhoogt sterk de urgentie.
    - Gemiddeld verhoogt matig.
-
 4. Risico-inschatting:
    - Hoog verhoogt sterk de urgentie.
    - Matig verhoogt de urgentie enigszins.
-
 5. Complexiteit gezinssituatie:
    - Hoge complexiteit verhoogt urgentie matig.
-
 6. Historie:
    - Eerdere hulpverlening verhoogt de urgentie licht.
 
@@ -122,37 +112,34 @@ Antwoord verplicht in dit exacte format:
 
 Urgentie: [Hoog / Gemiddeld / Laag]  
 Reden: [Geef in 2-3 duidelijke zinnen uitleg op basis van de aanwezige factoren uit de intakegegevens.]  
-Aanbevolen Actie: [Specifieke en korte aanbeveling voor vervolgstappen door hulpverlener, zoals onmiddellijke huisbezoek, spoedinterventie, aanvullende analyse of regulier vervolgtraject.]
+Aanbevolen Actie: [Specifieke en korte aanbeveling voor vervolgstappen door hulpverlener.]
 
 Casusinformatie:
 {case_description}
 """
 
-    with st.spinner("AI-classificatie wordt uitgevoerd..."):
-        try:
-            response = openai.chat.completions.create(
-                model="gpt-4o-mini-2024-07-18",
-                messages=[
-                    {"role": "system", "content": "Je bent een AI die intakecases in de jeugdzorg classificeert op urgentie."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=300
-            )
-            output = response.choices[0].message.content.strip()
-            confidence = response.choices[0].finish_reason
-            urgency_line = output.split("\n")[0]
-            urgency = urgency_line.split(":")[1].strip()
-            urgency_color = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}
-            emoji = urgency_color.get(urgency, "⚪")
-            st.markdown(f"### {emoji} Urgentie: **{urgency}**")
-            st.success("✅ AI-classificatie afgerond:")
-            st.text(output)
+        with st.spinner("AI-classificatie wordt uitgevoerd..."):
+            try:
+                response = openai.chat.completions.create(
+                    model="gpt-4o-mini-2024-07-18",
+                    messages=[
+                        {"role": "system", "content": "Je bent een AI die intakecases in de jeugdzorg classificeert op urgentie."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=300
+                )
+                output = response.choices[0].message.content.strip()
+                urgency_line = output.split("\n")[0]
+                urgency = urgency_line.split(":")[1].strip()
+                emoji = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}.get(urgency, "⚪")
+                st.markdown(f"### {emoji} Urgentie: **{urgency}**")
+                st.success("✅ AI-classificatie afgerond:")
+                st.text(output)
+                st.download_button("📄 Download resultaat", output, "ai_urgentieadvies.txt", "text/plain")
+                st.download_button("🗄️ Download intake (JSON)", json.dumps(case, ensure_ascii=False, indent=2), "intake_case.json", "application/json")
 
-            st.download_button("📄 Download resultaat", output, "ai_urgentieadvies.txt", "text/plain")
-            st.download_button("🗄️ Download intake (JSON)", json.dumps(case, ensure_ascii=False, indent=2), "intake_case.json", "application/json")
-
-        except Exception as e:
-            st.error(f"Er is iets misgegaan: {e}")
+            except Exception as e:
+                st.error(f"Er is iets misgegaan: {e}")
 
 with st.expander("ℹ️ Classificatieregels die de AI volgt"):
     st.markdown("""
