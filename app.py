@@ -79,7 +79,7 @@ if submitted:
             "region": region,
             "age": age if age is not None else "Onbekend",
             "issue": main_issue if main_issue != "Anders" else other_issue,
-           "submission_date": submission_date.strftime("%d/%m/%Y"),
+           "submission_date": submission_date.strftime("%d-%m-%Y"),
             "family_support": family_support,
             "family_complexity": family_complexity,
             "risk_level": risk_level,
