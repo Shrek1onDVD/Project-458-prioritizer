@@ -28,8 +28,14 @@ with st.form("intake_form"):
 
     col1, col2 = st.columns(2)
     with col1:
-        age = st.number_input("Leeftijd van het kind", 0, 18, 10)
-        submission_date = st.date_input("Datum van aanmelding", value=date.today())
+        age_input = st.text_input("Leeftijd van het kind (0-18)", value="")
+        submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
+
+        # Validatie
+        age = None
+        if age_input.strip().isdigit():
+            age = int(age_input.strip())
+
     with col2:
         main_issue = st.selectbox("Hoofdhulpvraag", [
             "", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
@@ -63,15 +69,17 @@ with st.form("intake_form"):
     submitted = st.form_submit_button("🔍 Classificeer urgentie")
 
 # --- GPT-4o MINI ---
+if submitted and (age is None or not main_issue or not family_support or not risk_level):
+    st.warning("Zorg ervoor dat leeftijd een geldig getal is (0-18) en dat alle verplichte velden zijn ingevuld.")
 if submitted:
     if not main_issue or not family_support or not risk_level:
         st.warning("Zorg ervoor dat alle verplichte velden ingevuld zijn.")
     else:
         case = {
             "region": region,
-            "age": age,
+            "age": age if age is not None else "Onbekend",
             "issue": main_issue if main_issue != "Anders" else other_issue,
-            "submission_date": str(submission_date),
+           "submission_date": submission_date.strftime("%d/%m/%Y"),
             "family_support": family_support,
             "family_complexity": family_complexity,
             "risk_level": risk_level,
