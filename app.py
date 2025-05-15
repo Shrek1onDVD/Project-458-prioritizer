@@ -17,14 +17,20 @@ st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
 # --- PDF Upload ---
 with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
-    uploaded_pdf = st.file_uploader("Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses)", type="pdf")
+    uploaded_pdf = st.file_uploader(
+        "Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses)", 
+        type="pdf"
+    )
     pdf_text = ""
     if uploaded_pdf is not None:
-        reader = PdfReader(uploaded_pdf)
-        for page in reader.pages:
-            pdf_text += page.extract_text() or ""
-        st.success("Document succesvol toegevoegd en gelezen.")
-
+        if uploaded_pdf.size > 10 * 1024 * 1024:
+            st.error("Bestand is te groot. Upload een PDF van maximaal 10MB.")
+        else:
+            reader = PdfReader(uploaded_pdf)
+            for page in reader.pages:
+                pdf_text += page.extract_text() or ""
+            st.success("Document succesvol toegevoegd en gelezen.")
+            
 # --- INTAKEFORMULIER ---
 with st.form(key="intake_form"):
     # 1. Kerngegevens kind en context
