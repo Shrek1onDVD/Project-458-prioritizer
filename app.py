@@ -1,9 +1,11 @@
 import streamlit as st
-st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
-
 import openai
 import json
 from datetime import date
+from PyPDF2 import PdfReader
+import io
+
+st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
 
 # CONFIG
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "")
@@ -13,6 +15,16 @@ if not openai.api_key:
 st.title("📋 Jeugdzorg AI - Intake en Risicoscreening (Demo)")
 st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
+# --- PDF Upload ---
+with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
+    uploaded_pdf = st.file_uploader("Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses)", type="pdf")
+    pdf_text = ""
+    if uploaded_pdf is not None:
+        reader = PdfReader(uploaded_pdf)
+        for page in reader.pages:
+            pdf_text += page.extract_text() or ""
+        st.success("Document succesvol toegevoegd en gelezen.")
+
 # --- INTAKEFORMULIER ---
 with st.form(key="intake_form"):
     # 1. Kerngegevens kind en context
@@ -21,13 +33,17 @@ with st.form(key="intake_form"):
     with col1:
         age = st.number_input("Leeftijd kind (0-18)", min_value=0, max_value=18, format="%d")
         gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
-        birth_date = st.date_input("Geboortedatum", format="DD/MM/YYYY")
     with col2:
         region = st.selectbox(
             "Regio",
             ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"]
         )
-        languages = st.multiselect("Gesproken talen thuis", ["Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya", "Spaans", "Frans", "Anders"])
+        languages = st.multiselect("Gesproken talen thuis", [
+            "Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya", "Spaans", "Frans",
+            "Koerdisch", "Amazigh", "Farsi", "Dari", "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"])
+        other_language = ""
+        if "Anders" in languages:
+            other_language = st.text_input("Geef anders opgegeven taal/talen aan")
         interpreter_needed = st.radio("Is een tolk nodig?", ["Ja", "Nee"])
         submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
 
@@ -86,9 +102,8 @@ if submitted:
     case = {
         "Leeftijd": age,
         "Geslacht": gender,
-        "Geboortedatum": birth_date.strftime("%d-%m-%Y"),
         "Regio": region,
-        "Gesproken talen": languages,
+        "Gesproken talen": languages + ([other_language] if other_language else []),
         "Tolk nodig": interpreter_needed,
         "Datum aanmelding": submission_date.strftime("%d-%m-%Y"),
         "Verwijzer": referral_type,
@@ -107,19 +122,23 @@ if submitted:
         "Kindvisie": child_view,
         "Risicofactoren": risk_factors,
         "Beschermende factoren": protective_factors,
-        "Extra signalen": extra_notes
+        "Extra signalen": extra_notes,
+        "Ingelezen PDF-context": pdf_text
     }
 
     prompt = f"""
 Je bent een AI-assistent gespecialiseerd in jeugdzorg.
-Analyseer onderstaand intakeformulier en geef een gestructureerd advies.
+Gebruik de intakegegevens en eventueel meegeleverde PDF-context om een bruikbaar advies te genereren voor een hulpverlener.
 
-Gebruik exact dit format:
+Beantwoord in het volgende format:
 
 Urgentie: [Hoog / Gemiddeld / Laag]
-Samenvatting: [max. 5 zinnen]
-Rode vlaggen: [kort opgesomd]
-Vervolgstappen: [concreet advies of verwijzing]
+Samenvatting: [max. 5 zinnen waarin de context, zorgen en doelen helder zijn]
+Rode vlaggen: [specifieke zorgen of signalen die direct aandacht vragen]
+Advies:
+- Aanbevolen type zorg of begeleiding
+- Of er meer informatie nodig is (en van wie)
+- Suggestie voor urgentievolgorde of tijdslijn (bv. binnen 48 uur vervolggesprek, doorverwijzing binnen 5 werkdagen)
 
 Casusinformatie:
 {json.dumps(case, ensure_ascii=False, indent=2)}
@@ -133,7 +152,7 @@ Casusinformatie:
                     {"role": "system", "content": "Je bent een AI-assistent die jeugdzorgintakes beoordeelt en adviezen formuleert."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=600,
+                max_tokens=1000,
                 temperature=0.4
             )
             output = response.choices[0].message.content.strip()
