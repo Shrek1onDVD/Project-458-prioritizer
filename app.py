@@ -111,15 +111,4 @@ Casusinformatie:
         except Exception as e:
             st.error(f"Er ging iets mis: {e}")
 
-st.caption("🧪 Prototype | Fictieve data | Geen echte persoonsgegevens verwerkt.")
-
-st.caption("🚨 Dit prototype gebruikt fictieve data en GPT-4o Mini. Geen echte persoonsgegevens worden verwerkt.")
-
-with st.expander("ℹ️ Classificatieregels die de AI volgt"):
-    st.markdown("""
-- **Leeftijd < 12 jaar** = verhoogde urgentie  
-- **Hulpvragen zoals mishandeling of verwaarlozing** = verhoogde urgentie  
-- **Lage steun vanuit gezin** = verhoogde urgentie  
-- **Risico-inschatting 'Hoog'** = verhoogt urgentie sterk  
-- AI combineert deze signalen en onderbouwt de classificatie kort
-    """)
+st.caption("🧪 Prototype | Fictieve data | GPT-4o Mini | Geen echte persoonsgegevens verwerkt.")
