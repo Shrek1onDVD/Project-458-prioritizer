@@ -4,6 +4,7 @@ import json
 from datetime import date
 
 # CONFIG
+enable_gpt4o_mini = "GPT-4o Mini"
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
@@ -74,7 +75,7 @@ with st.form(key="intake_form"):
 
     # 5. Gedrag, school en functioneren kind
     st.subheader("5. Gedrag, school en functioneren kind")
-    school_preformance = st.text_area(
+    school_performance = st.text_area(
         "Schoolprestaties en gedrag op school", height=68
     )
     behavioral_concerns = st.multiselect(
@@ -132,7 +133,7 @@ if submitted:
         "Opvoedcapaciteiten": parenting_skills,
         "Inzicht ouders": parental_awareness,
         "Steunnetwerk": support_network,
-        "School": school_preformance,
+        "School": school_performance,
         "Gedragsproblemen": behavioral_concerns,
         "Visie kind": child_view,
         "Risicofactoren": risk_factors,
@@ -173,4 +174,4 @@ Casusinformatie:
         except Exception as e:
             st.error(f"Er ging iets mis: {e}")
 
-st.caption("🧪 Prototype | Fictieve data | GPT-4o Mini | Geen echte persoonsgegevens verwerkt.")
+st.caption(f"🧪 Prototype | Fictieve data | {enable_gpt4o_mini} | Geen echte persoonsgegevens verwerkt.")
