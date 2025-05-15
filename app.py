@@ -92,7 +92,7 @@ Casusinformatie:
     with st.spinner("AI analyseert intake..."):
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o Mini",
                 messages=[
                     {"role": "system", "content": "Je bent een AI-assistent die jeugdzorgintakes beoordeelt en adviezen formuleert."},
                     {"role": "user", "content": prompt}
