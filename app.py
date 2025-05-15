@@ -6,148 +6,114 @@ from datetime import date
 # CONFIG
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Regions (mocked)
-REGIONS = {
-    "Noord-Holland": 3, "Zuid-Holland": 1, "Utrecht": 0, "Gelderland": 2,
-    "Friesland": 4, "Drenthe": 1, "Overijssel": 3, "Flevoland": 2,
-    "Limburg": 3, "Zeeland": 1, "Noord-Brabant": 2, "Amsterdam": 5
-}
+st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
+st.title("📋 Jeugdzorg AI - Intake en Risicoscreening (Demo)")
+st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
-st.set_page_config(page_title="Jeugdzorg AI Prioritizer", layout="centered")
-st.title("🔍 Jeugdzorg AI - Intake Prioritizer (Demo)")
-st.markdown("Dit prototype simuleert een AI-ondersteund intakeproces in de jeugdzorg.")
-
+# --- FORM ---
 with st.form("intake_form"):
-    st.subheader("📋 Intakeformulier")
-
-    # Dropdown with empty default option
-    region_options = [""] + list(REGIONS.keys())
-    region = st.selectbox("Regio", region_options)
-    if region:
-        st.markdown(f"**Beschikbare plekken in {region}**: {REGIONS.get(region, 0)}")
-
+    st.subheader("1. Persoons- en contextinformatie")
     col1, col2 = st.columns(2)
     with col1:
-        age_input = st.text_input("Leeftijd van het kind (0-18)", value="")
+        name = st.text_input("Naam van het kind")
+        age = st.number_input("Leeftijd", min_value=0, max_value=18)
+        gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
+        birth_date = st.date_input("Geboortedatum", format="DD/MM/YYYY")
+    with col2:
+        region = st.selectbox("Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"])
+        languages = st.text_input("Gesproken talen thuis")
+        interpreter_needed = st.radio("Tolk nodig?", ["Ja", "Nee"])
         submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
 
-        # Validatie
-        age = None
-        if age_input.strip().isdigit():
-            age = int(age_input.strip())
-
-    with col2:
-        main_issue = st.selectbox("Hoofdhulpvraag", [
-            "", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder",
-            "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"
-        ])
-        other_issue = ""
-        if main_issue == "Anders":
-            other_issue = st.text_input("Beschrijf de hulpvraag (optioneel)")
-
+    st.subheader("2. Huidige situatie en verwijzing")
     col3, col4 = st.columns(2)
     with col3:
-        family_support = st.radio("Mate van steun vanuit gezin", ["Hoog", "Gemiddeld", "Laag"])
-        family_complexity = st.selectbox("Complexiteit gezinssituatie", ["", "Laag", "Gemiddeld", "Hoog"])
-    with col4:
-        risk_level = st.selectbox("Risico-inschatting", ["", "Laag", "Matig", "Hoog"])
-        prior_interventions = st.radio("Eerdere hulpverlening gehad?", ["Ja", "Nee"])
-
-    col5, col6 = st.columns(2)
-    with col5:
-        referral_type = st.selectbox("Verwijzer", [
-            "", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
-        ])
-        other_referral = ""
-        if referral_type == "Anders":
-            other_referral = st.text_input("Beschrijf de verwijzer (optioneel)")
-    with col6:
+        referral_type = st.selectbox("Verwijzer", ["", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"])
         referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
+    with col4:
+        main_issue = st.selectbox("Hoofdhulpvraag", ["", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder", "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"])
+        other_issue = ""
+        if main_issue == "Anders":
+            other_issue = st.text_input("Beschrijf de hulpvraag")
+    goal_of_intervention = st.text_area("Wat is het doel van de aanmelding volgens verwijzer?", height=50)
+    immediate_risks = st.text_area("Directe zorgen of crisissituaties", height=50)
 
-    extra_notes = st.text_area("Overige opmerkingen of signalen (optioneel)")
+    st.subheader("3. Ontwikkeling en gezondheid")
+    dev_summary = st.text_area("Samenvatting van ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
+    physical_health = st.text_area("Lichamelijke gezondheid en medicatie", height=50)
+    mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=50)
 
-    submitted = st.form_submit_button("🔍 Classificeer urgentie")
+    st.subheader("4. Gezinssituatie en opvoedcapaciteiten")
+    parenting_skills = st.text_area("Inschatting opvoedcapaciteiten (structuur, beschikbaarheid, voorbeeldgedrag)", height=80)
+    parental_awareness = st.radio("Is er inzicht bij ouders in hun eigen gedrag en impact op kind?", ["Ja", "Nee", "Beperkt"])
+    support_network = st.text_input("Beschikbare steun (familie, netwerk, professionals)")
 
-# --- GPT-4o MINI ---
-if submitted and (age is None or not main_issue or not family_support or not risk_level):
-    st.warning("Zorg ervoor dat leeftijd een geldig getal is (0-18) en dat alle verplichte velden zijn ingevuld.")
+    st.subheader("5. Gedrag, school en functioneren kind")
+    school_performance = st.text_area("Schoolprestaties en gedrag op school", height=50)
+    behavioral_concerns = st.multiselect("Gedragsproblemen", ["Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit", "Pesten of gepest worden", "Zelfbeschadiging"])
+    child_view = st.text_area("Hoe ervaart het kind zelf de situatie?", height=50)
+
+    st.subheader("6. Risico- en beschermende factoren")
+    risk_factors = st.multiselect("Risicofactoren aanwezig", ["Verwaarlozing", "Mishandeling", "Geweld in gezin", "Psychische problematiek ouder", "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"])
+    protective_factors = st.multiselect("Beschermende factoren", ["Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk", "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"])
+    extra_notes = st.text_area("Overige opmerkingen of signalen", height=50)
+
+    submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
+
+# --- AI PROMPT ---
 if submitted:
-    if not main_issue or not family_support or not risk_level:
-        st.warning("Zorg ervoor dat alle verplichte velden ingevuld zijn.")
-    else:
-        case = {
-            "region": region,
-            "age": age if age is not None else "Onbekend",
-            "issue": main_issue if main_issue != "Anders" else other_issue,
-           "submission_date": submission_date.strftime("%d-%m-%Y"),
-            "family_support": family_support,
-            "family_complexity": family_complexity,
-            "risk_level": risk_level,
-            "prior_interventions": prior_interventions,
-            "referral_type": referral_type if referral_type != "Anders" else other_referral,
-            "referral_clarity": referral_clarity,
-            "extra_notes": extra_notes
-        }
-        case_description = "\n".join(f"{k}: {v}" for k, v in case.items())
+    case = {
+        "Naam": name, "Leeftijd": age, "Geslacht": gender,
+        "Regio": region, "Talen": languages, "Tolk": interpreter_needed,
+        "Datum aanmelding": submission_date.strftime("%d-%m-%Y"),
+        "Verwijzer": referral_type, "Hulpvraag duidelijk": referral_clarity,
+        "Hoofdhulpvraag": other_issue if main_issue == "Anders" else main_issue,
+        "Doel interventie": goal_of_intervention, "Directe zorgen": immediate_risks,
+        "Ontwikkeling": dev_summary, "Lichamelijke gezondheid": physical_health, "Psychische gezondheid": mental_health,
+        "Opvoedcapaciteiten": parenting_skills, "Inzicht ouders": parental_awareness, "Steunnetwerk": support_network,
+        "School": school_performance, "Gedragsproblemen": behavioral_concerns,
+        "Kind visie": child_view, "Risicofactoren": risk_factors,
+        "Beschermende factoren": protective_factors, "Overige": extra_notes
+    }
+    prompt = f"""
+Je bent een AI-assistent die een intake in de jeugdzorg analyseert.
+Geef een korte samenvatting, markeer rode vlaggen of ontbrekende informatie, en suggereer mogelijke vervolgstappen of verwijzingen.
+Gebruik dit format:
 
-        prompt = f"""
-Je bent een AI-assistent gespecialiseerd in het beoordelen van urgentie bij intakegevallen binnen de jeugdzorg. Classificeer onderstaande casus nauwkeurig op basis van specifieke criteria:
-
-Gebruik hierbij deze gedetailleerde richtlijnen:
-
-1. Leeftijd:
-   - Kind jonger dan 12 jaar verhoogt de urgentie.
-2. Type hulpvraag:
-   - Mishandeling, Verwaarlozing, Huiselijk geweld verhogen sterk de urgentie.
-   - Psychische problemen ouder en Weggelopen kind verhogen de urgentie matig.
-3. Mate van steun vanuit gezin:
-   - Laag verhoogt sterk de urgentie.
-   - Gemiddeld verhoogt matig.
-4. Risico-inschatting:
-   - Hoog verhoogt sterk de urgentie.
-   - Matig verhoogt de urgentie enigszins.
-5. Complexiteit gezinssituatie:
-   - Hoge complexiteit verhoogt urgentie matig.
-6. Historie:
-   - Eerdere hulpverlening verhoogt de urgentie licht.
-
-Bepaal vervolgens de totale urgentie:
-- 3 of meer sterke factoren = Hoog
-- 1-2 sterke factoren of meerdere matige factoren = Gemiddeld
-- Geen sterke factoren en maximaal één matige factor = Laag
-
-Antwoord verplicht in dit exacte format:
-
-Urgentie: [Hoog / Gemiddeld / Laag]  
-Reden: [Geef in 2-3 duidelijke zinnen uitleg op basis van de aanwezige factoren uit de intakegegevens.]  
-Aanbevolen Actie: [Specifieke en korte aanbeveling voor vervolgstappen door hulpverlener.]
+Urgentie: [Hoog / Gemiddeld / Laag]
+Samenvatting: [max. 5 zinnen]
+Rode vlaggen: [kort opsommen van zorgen of hiaten]
+Vervolgstappen: [concrete suggesties voor vervolg, hulp of doorverwijzing]
 
 Casusinformatie:
-{case_description}
+{json.dumps(case, ensure_ascii=False, indent=2)}
 """
 
-        with st.spinner("AI-classificatie wordt uitgevoerd..."):
-            try:
-                response = openai.chat.completions.create(
-                    model="gpt-4o-mini-2024-07-18",
-                    messages=[
-                        {"role": "system", "content": "Je bent een AI die intakecases in de jeugdzorg classificeert op urgentie."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=300
-                )
-                output = response.choices[0].message.content.strip()
-                urgency_line = output.split("\n")[0]
-                urgency = urgency_line.split(":")[1].strip()
-                emoji = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}.get(urgency, "⚪")
-                st.markdown(f"### {emoji} Urgentie: **{urgency}**")
-                st.success("✅ AI-classificatie afgerond:")
-                st.text(output)
-                st.download_button("📄 Download resultaat", output, "ai_urgentieadvies.txt", "text/plain")
-                st.download_button("🗄️ Download intake (JSON)", json.dumps(case, ensure_ascii=False, indent=2), "intake_case.json", "application/json")
+    with st.spinner("AI analyseert intake..."):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "Je bent een AI-assistent die jeugdzorgintakes beoordeelt en adviezen formuleert."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=600,
+                temperature=0.4
+            )
+            output = response.choices[0].message.content.strip()
+            urgency_line = output.split("\n")[0]
+            urgency = urgency_line.split(":")[1].strip()
+            emoji = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}.get(urgency, "⚪")
+            st.markdown(f"### {emoji} Urgentie: **{urgency}**")
+            st.text(output)
+            st.download_button("📄 Download advies", output, "ai_intakeadvies.txt", "text/plain")
+            st.download_button("🗄️ Download intake (JSON)", json.dumps(case, ensure_ascii=False, indent=2), "intake_case.json", "application/json")
+        except Exception as e:
+            st.error(f"Er ging iets mis: {e}")
 
-            except Exception as e:
-                st.error(f"Er is iets misgegaan: {e}")
+st.caption("🧪 Prototype | Fictieve data | Geen echte persoonsgegevens verwerkt.")
+
+st.caption("🚨 Dit prototype gebruikt fictieve data en GPT-4o Mini. Geen echte persoonsgegevens worden verwerkt.")
 
 with st.expander("ℹ️ Classificatieregels die de AI volgt"):
     st.markdown("""
@@ -157,5 +123,3 @@ with st.expander("ℹ️ Classificatieregels die de AI volgt"):
 - **Risico-inschatting 'Hoog'** = verhoogt urgentie sterk  
 - AI combineert deze signalen en onderbouwt de classificatie kort
     """)
-
-st.caption("🚨 Dit prototype gebruikt fictieve data en GPT-4o Mini. Geen echte persoonsgegevens worden verwerkt.")
