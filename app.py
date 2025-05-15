@@ -19,7 +19,7 @@ with st.form(key="intake_form"):
         name = st.text_input("Naam van het kind")
         age = st.number_input("Leeftijd (0-18)", min_value=0, max_value=18, format="%d")
         gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
-        birth_date = st.date_input("Geboortedatum", format="DD/MM/YYYY")
+        birth_date = st.date_input("Geboortedatum", format="DD-MM-YYYY")
     with col2:
         region = st.selectbox(
             "Regio",
