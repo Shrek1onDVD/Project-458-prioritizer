@@ -46,8 +46,8 @@ with st.form(key="intake_form"):
         other_issue = st.text_input(
             "Beschrijf de hulpvraag", disabled=(main_issue != "Anders")
         )
-    goal_of_intervention = st.text_area("Wat is het doel van de aanmelding volgens verwijzer?", height=50)
-    immediate_risks = st.text_area("Directe zorgen of crisissituaties", height=50)
+    goal_of_intervention = st.text_area("Wat is het doel van de aanmelding volgens verwijzer?", height=68)
+    immediate_risks = st.text_area("Directe zorgen of crisissituaties", height=68)
 
     # 3. Ontwikkeling en gezondheid
     st.subheader("3. Ontwikkeling en gezondheid")
@@ -55,10 +55,10 @@ with st.form(key="intake_form"):
         "Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80
     )
     physical_health = st.text_area(
-        "Lichamelijke gezondheid en medicatie", height=50
+        "Lichamelijke gezondheid en medicatie", height=68
     )
     mental_health = st.text_area(
-        "Psychische voorgeschiedenis (diagnoses/behandeling)", height=50
+        "Psychische voorgeschiedenis (diagnoses/behandeling)", height=68
     )
 
     # 4. Gezinssituatie en opvoedcapaciteiten
@@ -74,8 +74,8 @@ with st.form(key="intake_form"):
 
     # 5. Gedrag, school en functioneren kind
     st.subheader("5. Gedrag, school en functioneren kind")
-    school_performance = st.text_area(
-        "Schoolprestaties en gedrag op school", height=50
+    school_preformance = st.text_area(
+        "Schoolprestaties en gedrag op school", height=68
     )
     behavioral_concerns = st.multiselect(
         "Gedragsproblemen", 
@@ -85,7 +85,7 @@ with st.form(key="intake_form"):
         ]
     )
     child_view = st.text_area(
-        "Hoe ervaart het kind zelf de situatie?", height=50
+        "Hoe ervaart het kind zelf de situatie?", height=68
     )
 
     # 6. Risico- en beschermende factoren
@@ -105,7 +105,7 @@ with st.form(key="intake_form"):
         ]
     )
     extra_notes = st.text_area(
-        "Overige opmerkingen of signalen", height=50
+        "Overige opmerkingen of signalen", height=68
     )
 
     # Submit button binnen form
@@ -132,7 +132,7 @@ if submitted:
         "Opvoedcapaciteiten": parenting_skills,
         "Inzicht ouders": parental_awareness,
         "Steunnetwerk": support_network,
-        "School": school_performance,
+        "School": school_preformance,
         "Gedragsproblemen": behavioral_concerns,
         "Visie kind": child_view,
         "Risicofactoren": risk_factors,
