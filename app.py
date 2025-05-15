@@ -21,7 +21,10 @@ with st.form(key="intake_form"):
         gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
         birth_date = st.date_input("Geboortedatum", format="DD/MM/YYYY")
     with col2:
-        region = st.selectbox("Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"])
+        region = st.selectbox(
+            "Regio",
+            ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"]
+        )
         languages = st.text_input("Gesproken talen thuis")
         interpreter_needed = st.radio("Tolk nodig?", ["Ja", "Nee"])
         submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
@@ -30,26 +33,39 @@ with st.form(key="intake_form"):
     st.subheader("2. Huidige situatie en verwijzing")
     col3, col4 = st.columns(2)
     with col3:
-        referral_type = st.selectbox("Verwijzer", ["", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"])
+        referral_type = st.selectbox(
+            "Verwijzer",
+            ["", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"]
+        )
         referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
     with col4:
         main_issue = st.selectbox(
             "Hoofdhulpvraag",
             ["", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder", "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"]
         )
-        other_issue = st.text_input("Beschrijf de hulpvraag", disabled=(main_issue != "Anders"))
+        other_issue = st.text_input(
+            "Beschrijf de hulpvraag", disabled=(main_issue != "Anders")
+        )
     goal_of_intervention = st.text_area("Wat is het doel van de aanmelding volgens verwijzer?", height=50)
     immediate_risks = st.text_area("Directe zorgen of crisissituaties", height=50)
 
     # 3. Ontwikkeling en gezondheid
     st.subheader("3. Ontwikkeling en gezondheid")
-    dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
-    physical_health = st.text_area("Lichamelijke gezondheid en medicatie", height=50)
-    mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=50)
+    dev_summary = st.text_area(
+        "Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80
+    )
+    physical_health = st.text_area(
+        "Lichamelijke gezondheid en medicatie", height=50
+    )
+    mental_health = st.text_area(
+        "Psychische voorgeschiedenis (diagnoses/behandeling)", height=50
+    )
 
     # 4. Gezinssituatie en opvoedcapaciteiten
     st.subheader("4. Gezinssituatie en opvoedcapaciteiten")
-    parenting_skills = st.text_area("Opvoedcapaciteiten (structuur, beschikbaarheid, voorbeeldgedrag)", height=80)
+    parenting_skills = st.text_area(
+        "Opvoedcapaciteiten (structuur, beschikbaarheid, voorbeeldgedrag)", height=80
+    )
     parental_awareness = st.radio(
         "Inzicht ouders in eigen gedrag en impact op kind?",
         ["Ja", "Nee", "Beperkt"]
@@ -58,25 +74,41 @@ with st.form(key="intake_form"):
 
     # 5. Gedrag, school en functioneren kind
     st.subheader("5. Gedrag, school en functioneren kind")
-    school_performance = st.text_area("Schoolprestaties en gedrag op school", height=50)
+    school_performance = st.text_area(
+        "Schoolprestaties en gedrag op school", height=50
+    )
     behavioral_concerns = st.multiselect(
         "Gedragsproblemen", 
-        ["Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit", "Pesten of gepest worden", "Zelfbeschadiging"]
+        [
+            "Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit",
+            "Pesten of gepest worden", "Zelfbeschadiging"
+        ]
     )
-    child_view = st.text_area("Hoe ervaart het kind zelf de situatie?", height=50)
+    child_view = st.text_area(
+        "Hoe ervaart het kind zelf de situatie?", height=50
+    )
 
     # 6. Risico- en beschermende factoren
     st.subheader("6. Risico- en beschermende factoren")
     risk_factors = st.multiselect(
         "Risicofactoren aanwezig", 
-        ["Verwaarlozing", "Mishandeling", "Geweld in gezin", "Psychische problematiek ouder", "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"]
+        [
+            "Verwaarlozing", "Mishandeling", "Geweld in gezin", "Psychische problematiek ouder",
+            "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"
+        ]
     )
     protective_factors = st.multiselect(
         "Beschermende factoren", 
-        ["Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk", "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"]
+        [
+            "Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk",
+            "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"
+        ]
     )
-    extra_notes = st.text_area("Overige opmerkingen of signalen", height=50)
+    extra_notes = st.text_area(
+        "Overige opmerkingen of signalen", height=50
+    )
 
+    # Submit button binnen form
     submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
 # --- AI ANALYSE EN ADVIES ---
@@ -123,7 +155,7 @@ Casusinformatie:
     with st.spinner("AI analyseert intake..."):
         try:
             response = openai.chat.completions.create(
-                model="gpt-4o-mini-2024-07-18",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "Je bent een AI-assistent die jeugdzorgintakes beoordeelt en adviezen formuleert."},
                     {"role": "user", "content": prompt}
