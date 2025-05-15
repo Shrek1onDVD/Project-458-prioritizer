@@ -4,14 +4,13 @@ import json
 from datetime import date
 
 # CONFIG
-enable_gpt4o_mini = "GPT-4o Mini"
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
 st.title("📋 Jeugdzorg AI - Intake en Risicoscreening (Demo)")
 st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
-# --- FORMULIER ---
+# --- INTAKEFORMULIER ---
 with st.form(key="intake_form"):
     # 1. Persoons- en contextinformatie
     st.subheader("1. Persoons- en contextinformatie")
@@ -109,10 +108,10 @@ with st.form(key="intake_form"):
         "Overige opmerkingen of signalen", height=68
     )
 
-    # Submit button binnen form
+    # Submit-knop binnen form
     submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
-# --- AI ANALYSE EN ADVIES ---
+# --- AI-ANALYSE & ADVIES ---
 if submitted:
     case = {
         "Naam": name,
@@ -153,7 +152,7 @@ Vervolgstappen: [concrete suggesties]
 Casusinformatie:
 {json.dumps(case, ensure_ascii=False, indent=2)}
 """
-    with st.spinner("AI analyseert intake..."):
+    with st.spinner("AI analyseert intake…"):
         try:
             response = openai.chat.completions.create(
                 model="gpt-4o-mini",
@@ -174,4 +173,4 @@ Casusinformatie:
         except Exception as e:
             st.error(f"Er ging iets mis: {e}")
 
-st.caption(f"🧪 Prototype | Fictieve data | {enable_gpt4o_mini} | Geen echte persoonsgegevens verwerkt.")
+st.caption("🧪 Prototype | Fictieve data | GPT-4o Mini | Geen echte persoonsgegevens verwerkt | Alleen geautoriseerde gebruikers hebben toegang.")
