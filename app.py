@@ -18,7 +18,7 @@ st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 # --- PDF Upload ---
 with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
     uploaded_pdf = st.file_uploader(
-        "Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses)", 
+        "Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses, max. 10MB)", 
         type="pdf"
     )
     pdf_text = ""
