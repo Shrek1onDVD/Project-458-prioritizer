@@ -6,10 +6,7 @@ This is a prototype AI-powered intake and risk screening tool for Jeugdzorg (Dut
 
 ## 🚀 Launch App on Streamlit
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://jeugdzorg-ai-prioritizer-abc123xyz.streamlit.app](https://jeugdzorg-ai-prioritizer-kfth3imgq2umygzoxlnfcb.streamlit.app/))
-
-
-> Replace `<your-hash>` with your actual Streamlit subdomain, or copy the full app URL from Streamlit Cloud after deploy.
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://jeugdzorg-ai-prioritizer-kfth3imgq2umygzoxlnfcb.streamlit.app/)
 
 ## 🧪 Features
 
