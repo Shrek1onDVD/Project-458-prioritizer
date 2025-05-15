@@ -1,9 +1,10 @@
 import streamlit as st
+st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
+
 import openai
 import json
 from datetime import date
 
-# CONFIG
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "")
 if not openai.api_key:
     st.warning("⚠️ OPENAI_API_KEY ontbreekt. Voeg deze toe via Streamlit Cloud → Secrets.")
