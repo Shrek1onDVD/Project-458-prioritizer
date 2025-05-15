@@ -91,8 +91,8 @@ Casusinformatie:
 
     with st.spinner("AI analyseert intake..."):
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            response = openai.chat.completions.create(
+                model="gpt-4o-mini-2024-07-18",
                 messages=[
                     {"role": "system", "content": "Je bent een AI-assistent die jeugdzorgintakes beoordeelt en adviezen formuleert."},
                     {"role": "user", "content": prompt}
@@ -111,4 +111,4 @@ Casusinformatie:
         except Exception as e:
             st.error(f"Er ging iets mis: {e}")
 
-st.caption("🧪 Prototype | Fictieve data | Geen echte persoonsgegevens verwerkt.")
+st.caption("🧪 Prototype | Fictieve data | GPT-4o Mini | Geen echte persoonsgegevens verwerkt.")
