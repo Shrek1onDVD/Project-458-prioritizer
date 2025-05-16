@@ -100,7 +100,11 @@ with st.form(key="intake_form"):
     protective_factors = st.multiselect("Beschermende factoren", ["Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk", "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"])
     extra_notes = st.text_area("Overige signalen of opmerkingen", height=68)
 
-    # Submit-knop
+    # 7. Transparantie en toezicht
+    st.subheader("7. Transparantie en toezicht (voor intern gebruik)")
+    user_informed = st.checkbox("Gebruiker is geïnformeerd over inzet van AI in deze intake", value=False)
+    deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=60)
+
     submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
 # --- AI-ANALYSE & ADVIES ---
@@ -129,11 +133,14 @@ if submitted:
         "Risicofactoren": risk_factors,
         "Beschermende factoren": protective_factors,
         "Extra signalen": extra_notes,
-        "Ingelezen PDF-context": pdf_text
+        "Ingelezen PDF-context": pdf_text,
+        "Gebruiker geïnformeerd over AI": user_informed,
+        "Toelichting bij afwijking AI-advies": deviation_reason
     }
 
     prompt = f"""
-Je bent een AI-assistent gespecialiseerd in jeugdzorg.
+Je bent een AI-assistent gespecialiseerd in jeugdzorg. Je dient uitsluitend als ondersteuning, niet als beslisser. Je advies moet begrijpelijk, uitlegbaar en voorzichtig geformuleerd zijn. Neem aan dat een professional jouw advies leest en eventueel kan bijstellen.
+
 Gebruik de intakegegevens en eventueel meegeleverde PDF-context om een bruikbaar advies te genereren voor een hulpverlener.
 
 Beantwoord in het volgende format:
@@ -164,6 +171,7 @@ Casusinformatie:
             output = response.choices[0].message.content.strip()
             urgency = output.splitlines()[0].split(":")[1].strip()
             emoji = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}.get(urgency, "⚪")
+            st.warning("⚠️ Dit advies is gegenereerd door AI en bedoeld als ondersteuning. Je blijft zelf verantwoordelijk voor de beoordeling en opvolging.")
             st.markdown(f"### {emoji} Urgentie: **{urgency}**")
             st.text(output)
             st.download_button("📄 Download advies", output, "ai_intakeadvies.txt", "text/plain")
