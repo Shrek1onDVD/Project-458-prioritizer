@@ -61,7 +61,7 @@ with st.form(key="intake_form"):
 
     st.subheader("3. Gezondheid en ontwikkeling")
     dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
-    physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=69)
+    physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=68)
     mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=68)
 
     st.subheader("4. Ouders en opvoedomgeving")
@@ -81,7 +81,7 @@ with st.form(key="intake_form"):
 
     st.subheader("7. Transparantie en toezicht (voor intern gebruik)")
     user_informed = st.checkbox("Gebruiker is geïnformeerd over inzet van AI in deze intake", value=False)
-    deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=60)
+    deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=68)
 
     submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
