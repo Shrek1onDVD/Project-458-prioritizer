@@ -61,7 +61,7 @@ with st.form(key="intake_form"):
 
     st.subheader("3. Gezondheid en ontwikkeling")
     dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
-    physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=68)
+    physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=69)
     mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=68)
 
     st.subheader("4. Ouders en opvoedomgeving")
