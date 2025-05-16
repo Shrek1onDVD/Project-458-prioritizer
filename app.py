@@ -3,7 +3,6 @@ import openai
 import json
 from datetime import date
 from PyPDF2 import PdfReader
-import io
 
 st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="centered")
 
@@ -15,7 +14,7 @@ if not openai.api_key:
 st.title("📋 Jeugdzorg AI - Intake en Risicoscreening (Demo)")
 st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
-# --- PDF Upload ---
+# PDF Upload
 with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
     uploaded_pdf = st.file_uploader(
         "Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses, max. 10MB)", 
@@ -30,84 +29,63 @@ with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
             for page in reader.pages:
                 pdf_text += page.extract_text() or ""
             st.success("Document succesvol toegevoegd en gelezen.")
-            
-# --- INTAKEFORMULIER ---
+
+# INTAKEFORMULIER
 with st.form(key="intake_form"):
-    # 1. Kerngegevens kind en context
     st.subheader("1. Kerngegevens kind en context")
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Leeftijd kind (0-18)", min_value=0, max_value=18, format="%d")
         gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
     with col2:
-        region = st.selectbox(
-            "Regio",
-            ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"]
-        )
+        region = st.selectbox("Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg", "Zeeland", "Noord-Brabant", "Amsterdam"])
         languages = st.multiselect("Gesproken talen thuis", [
             "Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya", "Spaans", "Frans",
-            "Koerdisch", "Amazigh", "Farsi", "Dari", "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"])
-        other_language = ""
-        if "Anders" in languages:
-            other_language = st.text_input("Geef anders opgegeven taal/talen aan")
+            "Koerdisch", "Amazigh", "Farsi", "Dari", "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"
+        ])
+        other_language = st.text_input("Geef anders opgegeven taal/talen aan") if "Anders" in languages else ""
         interpreter_needed = st.radio("Is een tolk nodig?", ["Ja", "Nee"])
         submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
 
-    # 2. Aanmelding en hoofdproblematiek
     st.subheader("2. Aanmelding en hoofdproblematiek")
     col3, col4 = st.columns(2)
     with col3:
-        referral_type = st.selectbox(
-            "Wie verwijst?",
-            ["", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"]
-        )
+        referral_type = st.selectbox("Wie verwijst?", ["", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"])
         referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
     with col4:
-        main_issue = st.selectbox(
-            "Hoofdhulpvraag",
-            ["", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder", "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"]
-        )
-        other_issue = st.text_input(
-            "Indien anders, beschrijf de hulpvraag", disabled=(main_issue != "Anders")
-        )
+        main_issue = st.selectbox("Hoofdhulpvraag", ["", "Verwaarlozing", "Mishandeling", "Huiselijk geweld", "Psychische problemen ouder", "Schooluitval", "Verslavingsproblematiek", "Weggelopen kind", "Onbekend verblijf", "Anders"])
+        other_issue = st.text_input("Indien anders, beschrijf de hulpvraag", disabled=(main_issue != "Anders"))
+
     goal_of_intervention = st.text_area("Wat is het doel van deze aanmelding?", height=80)
     immediate_risks = st.text_area("Directe zorgen of crisissituaties?", height=80)
 
-    # 3. Gezondheid en ontwikkeling
     st.subheader("3. Gezondheid en ontwikkeling")
     dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
     physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=68)
     mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=68)
 
-    # 4. Ouders en opvoedomgeving
     st.subheader("4. Ouders en opvoedomgeving")
     parenting_skills = st.text_area("Opvoedvaardigheden (structuur, beschikbaarheid, voorbeeldgedrag)", height=80)
     parental_awareness = st.radio("Inzicht van ouders in eigen invloed op het kind?", ["Ja", "Nee", "Beperkt"])
     support_network = st.text_area("Netwerk en betrokken hulpverlening", height=68)
 
-    # 5. Gedrag en functioneren kind
     st.subheader("5. Gedrag en functioneren kind")
     school_performance = st.text_area("Schoolprestaties en gedrag op school", height=68)
-    behavioral_concerns = st.multiselect(
-        "Gedragsproblemen waargenomen bij kind", 
-        ["Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit", "Pesten of gepest worden", "Zelfbeschadiging"]
-    )
+    behavioral_concerns = st.multiselect("Gedragsproblemen waargenomen bij kind", ["Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit", "Pesten of gepest worden", "Zelfbeschadiging"])
     child_view = st.text_area("Hoe ervaart het kind zelf de situatie?", height=68)
 
-    # 6. Risico- en beschermende factoren
     st.subheader("6. Risico- en beschermende factoren")
     risk_factors = st.multiselect("Aanwezige risicofactoren", ["Verwaarlozing", "Mishandeling", "Geweld in gezin", "Psychische problematiek ouder", "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"])
     protective_factors = st.multiselect("Beschermende factoren", ["Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk", "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"])
     extra_notes = st.text_area("Overige signalen of opmerkingen", height=68)
 
-    # 7. Transparantie en toezicht
     st.subheader("7. Transparantie en toezicht (voor intern gebruik)")
     user_informed = st.checkbox("Gebruiker is geïnformeerd over inzet van AI in deze intake", value=False)
     deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=60)
 
     submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
-# --- AI-ANALYSE & ADVIES ---
+# AI-Analyse
 if submitted:
     case = {
         "Leeftijd": age,
