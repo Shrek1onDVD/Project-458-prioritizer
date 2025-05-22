@@ -33,7 +33,7 @@ def transcribe_audio(audio_file):
 # PDF Upload
 with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
     uploaded_pdf = st.file_uploader(
-        "Upload een PDF-document (max. 10MB)",
+        "Upload een PDF-document met aanvullende informatie (max. 10MB)",
         type="pdf"
     )
     pdf_text = ""
@@ -68,6 +68,7 @@ with tab2:
         media_stream_constraints={"audio": True, "video": False},
         rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
     )
+
     audio_file = None
     if ctx and ctx.audio_processor and hasattr(ctx.audio_processor, 'frames'):
         recorder = ctx.audio_processor
@@ -76,12 +77,14 @@ with tab2:
             audio_file = io.BytesIO(wav_bytes)
             audio_file.name = "mic_recording.wav"
             st.audio(wav_bytes, format="audio/wav")
+
     if not audio_file:
         uploaded_audio = st.file_uploader(
             "Of upload WAV/MP3/FLAC voor transcriptie", type=["wav", "mp3", "flac"]
         )
         if uploaded_audio:
             audio_file = uploaded_audio
+
     if audio_file:
         transcript = transcribe_audio(audio_file)
         session_transcript = st.text_area(
@@ -137,7 +140,7 @@ with tab1:
             height=120, key="transcript", disabled=True
         )
 
-        # Remaining fields...
+        # Remaining fields…
         goal_of_intervention = st.text_area("Doel van deze aanmelding?", height=80)
         immediate_risks = st.text_area("Directe zorgen of crisissituaties?", height=80)
         dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
@@ -166,11 +169,11 @@ with tab1:
 
         submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
 
-# AI-Analyse
+# AI-Analyse (ongewijzigd)
 if submitted:
     case = {
         "Leeftijd": age, "Geslacht": gender, "Regio": region,
-        "Talen": languages + ([other_language] if other_language else []),
+        "Gesproken talen": languages + ([other_language] if other_language else []),
         "Tolk nodig": interpreter_needed,
         "Datum aanmelding": submission_date.strftime("%d-%m-%Y"),
         "Verwijzer": referral_type,
