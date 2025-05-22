@@ -3,6 +3,8 @@ import openai
 import json
 from datetime import date
 from PyPDF2 import PdfReader
+import io
+from streamlit_audio_recorder import audio_recorder
 
 # Configure page
 st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="wide")
@@ -16,13 +18,9 @@ st.title("📋 Jeugdzorg AI - Intake en Risicoscreening (Demo)")
 st.markdown("Simulatie van een AI-ondersteund intakeproces in de jeugdzorg.")
 
 # Helper: audio-transcriptie via OpenAI Whisper
-# Geen extra dependencies nodig
-# audio_file: UploadedIO object
-# returns transcribed text
 @st.cache_data(show_spinner=False)
 def transcribe_audio(audio_file):
     try:
-        # Rewind to start
         audio_file.seek(0)
         transcript = openai.Audio.transcribe(
             model="whisper-1",
@@ -35,7 +33,7 @@ def transcribe_audio(audio_file):
 # PDF Upload
 with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
     uploaded_pdf = st.file_uploader(
-        "Upload een PDF-document met aanvullende informatie (zoals eerdere diagnoses, max. 10MB)", 
+        "Upload een PDF-document met aanvullende informatie (max. 10MB)", 
         type="pdf"
     )
     pdf_text = ""
@@ -48,99 +46,100 @@ with st.expander("📄 Upload aanvullende documentatie (optioneel)"):
                 pdf_text += page.extract_text() or ""
             st.success("Document succesvol toegevoegd en gelezen.")
 
-# Twee kolommen: formulier links, audio rechts
+# Tabs: intake form and speech-to-text
 tab1, tab2 = st.tabs(["Formulier & Analyse", "Spraak naar tekst"])
 
 with tab2:
-    st.subheader("🎤 Spraak naar tekst (Demo)")
-    audio_file = st.file_uploader("Upload WAV/MP3/FLAC voor transcriptie", type=["wav", "mp3", "flac"])
+    st.subheader("🎤 Live opname of upload (Demo)")
+    # Live microfoon opname
+    recorded_bytes = audio_recorder(format="wav")
+    audio_file = None
+    if recorded_bytes:
+        st.audio(recorded_bytes, format='audio/wav')
+        audio_file = io.BytesIO(recorded_bytes)
+        audio_file.name = "opname.wav"
+    # Fallback: bestand upload
+    if not audio_file:
+        uploaded_audio = st.file_uploader("Of upload WAV/MP3/FLAC voor transcriptie", type=["wav", "mp3", "flac"])
+        if uploaded_audio:
+            audio_file = uploaded_audio
+    # Transcribe
     if audio_file:
         transcript = transcribe_audio(audio_file)
         session_transcript = st.text_area(
-            "Transcript (controleer en corrigeer indien nodig)", transcript, height=200, key="_stt_review"
+            "Transcript (controleer en corrigeer)", transcript, height=200, key="_stt_review"
         )
         st.session_state["transcript"] = session_transcript
     else:
-        st.info("Upload een audio-bestand om te transcriberen.")
+        st.info("Gebruik de opnameknop of upload een audio-bestand om te transcriberen.")
 
 with tab1:
-    col_form = st.container()
-    with col_form:
-        # Intakeformulier
-        with st.form(key="intake_form"):
-            st.subheader("1. Kerngegevens kind en context")
-            col1, col2 = st.columns(2)
-            with col1:
-                age = st.number_input("Leeftijd kind (0-18)", min_value=0, max_value=18, format="%d")
-                gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
-            with col2:
-                region = st.selectbox(
-                    "Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland",
-                               "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg",
-                               "Zeeland", "Noord-Brabant", "Amsterdam"]
-                )
-                languages = st.multiselect(
-                    "Gesproken talen thuis", [
-                        "Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya",
-                        "Spaans", "Frans", "Koerdisch", "Amazigh", "Farsi", "Dari",
-                        "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"
-                    ]
-                )
-                other_language = st.text_input("Anders, namelijk") if "Anders" in languages else ""
-                interpreter_needed = st.radio("Is een tolk nodig?", ["Ja", "Nee"])
-                submission_date = st.date_input("Datum van aanmelding", value=date.today(), format="DD/MM/YYYY")
-
-            st.subheader("2. Aanmelding en hoofdproblematiek")
-            col3, col4 = st.columns(2)
-            with col3:
-                referral_type = st.selectbox("Wie verwijst?", [
-                    "", "Huisarts", "Wijkteam", "Onderwijs", "Ziekenhuis", "Politie", "Zelfmelding", "Anders"
-                ])
-                referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
-            with col4:
-                main_issue = st.selectbox("Hoofdhulpvraag", [
-                    "", "Verwaarlozing", "Mishandeling", "Huiselijk geweld",
-                    "Psychische problemen ouder", "Schooluitval", "Verslavingsproblematiek",
-                    "Weggelopen kind", "Onbekend verblijf", "Anders"
-                ])
-                other_issue = st.text_input("Indien anders, beschrijf", disabled=(main_issue != "Anders"))
-
-            st.subheader("🔊 Transcript spraakinvoer")
-            st.text_area(
-                "Transcript uit audio-tab", st.session_state.get("transcript", ""),
-                height=120, key="transcript", disabled=True
-            )
-
-            # Overige velden
-            goal_of_intervention = st.text_area("Wat is het doel van deze aanmelding?", height=80)
-            immediate_risks = st.text_area("Directe zorgen of crisissituaties?", height=80)
-            dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
-            physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=68)
-            mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=68)
-            parenting_skills = st.text_area("Opvoedvaardigheden (structuur, beschikbaarheid, voorbeeldgedrag)", height=80)
-            parental_awareness = st.radio("Inzicht van ouders in eigen invloed op het kind?", ["Ja", "Nee", "Beperkt"])
-            support_network = st.text_area("Netwerk en betrokken hulpverlening", height=68)
-            school_performance = st.text_area("Schoolprestaties en gedrag op school", height=68)
-            behavioral_concerns = st.multiselect("Gedragsproblemen waargenomen bij kind", [
-                "Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit",
-                "Pesten of gepest worden", "Zelfbeschadiging"
+    with st.form(key="intake_form"):
+        st.subheader("1. Kerngegevens kind en context")
+        col1, col2 = st.columns(2)
+        with col1:
+            age = st.number_input("Leeftijd kind (0-18)", min_value=0, max_value=18)
+            gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
+        with col2:
+            region = st.selectbox("Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland",
+                                           "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg",
+                                           "Zeeland", "Noord-Brabant", "Amsterdam"])
+            languages = st.multiselect("Gesproken talen thuis", [
+                "Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya",
+                "Spaans", "Frans", "Koerdisch", "Amazigh", "Farsi", "Dari",
+                "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"
             ])
-            child_view = st.text_area("Hoe ervaart het kind zelf de situatie?", height=68)
-            risk_factors = st.multiselect("Aanwezige risicofactoren", [
-                "Verwaarlozing", "Mishandeling", "Geweld in gezin",
-                "Psychische problematiek ouder", "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"
-            ])
-            protective_factors = st.multiselect("Beschermende factoren", [
-                "Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk",
-                "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"
-            ])
-            extra_notes = st.text_area("Overige signalen of opmerkingen", height=68)
-            user_informed = st.checkbox("Gebruiker is geïnformeerd over inzet van AI in deze intake", value=False)
-            deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=68)
+            other_language = st.text_input("Anders, namelijk") if "Anders" in languages else ""
+            interpreter_needed = st.radio("Is een tolk nodig?", ["Ja", "Nee"])
+            submission_date = st.date_input("Datum van aanmelding", value=date.today())
 
-            submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
+        st.subheader("2. Aanmelding en hoofdproblematiek")
+        col3, col4 = st.columns(2)
+        with col3:
+            referral_type = st.selectbox("Wie verwijst?", ["", "Huisarts", "Wijkteam", "Onderwijs",
+                                                          "Ziekenhuis", "Politie", "Zelfmelding", "Anders"])
+            referral_clarity = st.radio("Is de hulpvraag duidelijk?", ["Ja", "Nee"])
+        with col4:
+            main_issue = st.selectbox("Hoofdhulpvraag", ["", "Verwaarlozing", "Mishandeling",
+                                                        "Huiselijk geweld", "Psychische problemen ouder",
+                                                        "Schooluitval", "Verslavingsproblematiek",
+                                                        "Weggelopen kind", "Onbekend verblijf", "Anders"])
+            other_issue = st.text_input("Indien anders, beschrijf", disabled=(main_issue != "Anders"))
 
-# AI-Analyse
+        st.subheader("🔊 Transcript spraakinvoer")
+        st.text_area("Transcript uit audio-tab", st.session_state.get("transcript", ""), height=120,
+                     key="transcript", disabled=True)
+
+        # Overige velden… (ongewijzigd)
+        goal_of_intervention = st.text_area("Wat is het doel van deze aanmelding?", height=80)
+        immediate_risks = st.text_area("Directe zorgen of crisissituaties?", height=80)
+        dev_summary = st.text_area("Ontwikkeling (motorisch, sociaal, emotioneel, taal)", height=80)
+        physical_health = st.text_area("Lichamelijke gezondheid / medicatie", height=68)
+        mental_health = st.text_area("Psychische voorgeschiedenis (diagnoses/behandeling)", height=68)
+        parenting_skills = st.text_area("Opvoedvaardigheden (structuur, beschikbaarheid, voorbeeldgedrag)", height=80)
+        parental_awareness = st.radio("Inzicht van ouders in eigen invloed op het kind?", ["Ja", "Nee", "Beperkt"])
+        support_network = st.text_area("Netwerk en betrokken hulpverlening", height=68)
+        school_performance = st.text_area("Schoolprestaties en gedrag op school", height=68)
+        behavioral_concerns = st.multiselect("Gedragsproblemen waargenomen bij kind", [
+            "Agressie", "Terugtrekking", "Hyperactiviteit", "Emotionele instabiliteit",
+            "Pesten of gepest worden", "Zelfbeschadiging"
+        ])
+        child_view = st.text_area("Hoe ervaart het kind zelf de situatie?", height=68)
+        risk_factors = st.multiselect("Aanwezige risicofactoren", [
+            "Verwaarlozing", "Mishandeling", "Geweld in gezin",
+            "Psychische problematiek ouder", "Verslaving ouder", "Crimineel gedrag", "Financiële problemen"
+        ])
+        protective_factors = st.multiselect("Beschermende factoren", [
+            "Positieve schoolervaring", "Stabiele verzorger", "Steunend netwerk",
+            "Zelfvertrouwen kind", "Open communicatie", "Hulpbereidheid ouders"
+        ])
+        extra_notes = st.text_area("Overige signalen of opmerkingen", height=68)
+        user_informed = st.checkbox("Gebruiker is geïnformeerd over inzet van AI in deze intake", value=False)
+        deviation_reason = st.text_area("Indien je afwijkt van het AI-advies, licht hier toe (optioneel)", height=68)
+
+        submitted = st.form_submit_button("🔍 Analyseer intake en genereer advies")
+
+# AI-Analyse (ongewijzigd)
 if submitted:
     case = {
         "Leeftijd": age, "Geslacht": gender, "Regio": region,
@@ -204,7 +203,7 @@ Casusinformatie:
             urgency = output.splitlines()[0].split(":")[1].strip()
             emoji = {"Hoog": "🔴", "Gemiddeld": "🟠", "Laag": "🟢"}.get(urgency, "⚪")
             st.warning("⚠️ Dit advies is gegenereerd door AI en bedoeld als ondersteuning. Je blijft zelf verantwoordelijk voor de beoordeling en opvolging.")
-            st.markdown(f"### {emoji} Urcientie: **{urgency}**")
+            st.markdown(f"### {emoji} Urgentie: **{urgency}**")
             st.text(output)
             st.download_button("📄 Download advies", output, "ai_intakeadvies.txt", "text/plain")
             st.download_button("🗄️ Download intake (JSON)", json.dumps(case, ensure_ascii=False, indent=2), "intake_case.json", "application/json")
