@@ -4,7 +4,7 @@ import json
 from datetime import date
 from PyPDF2 import PdfReader
 import io
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WEbrtcMode
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 
 # Configure page
 st.set_page_config(page_title="Jeugdzorg AI Screening Tool", layout="wide")
@@ -63,7 +63,7 @@ with tab2:
 
     ctx = webrtc_streamer(
         key="audio-record",
-        mode=WEbrtcMode.SENDONLY,
+        mode=WebRtcMode.SENDONLY,
         audio_processor_factory=Recorder,
         media_stream_constraints={"audio": True, "video": False},
         rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
