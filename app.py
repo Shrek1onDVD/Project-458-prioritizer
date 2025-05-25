@@ -3,7 +3,7 @@ import openai
 import json
 from datetime import datetime
 from PyPDF2 import PdfReader
-from lxml import etree
+import xml.etree.ElementTree as etree
 
 # === Configuratie ===
 st.set_page_config(page_title="Valuation Review Tool", layout="wide")
@@ -76,7 +76,7 @@ def generate_xbrl(data):
         else:
             etree.SubElement(root, key).text = str(value)
 
-    return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+    return etree.tostring(root, encoding="utf-8", xml_declaration=True)
 
 # === Analyse & Resultaat ===
 data = extract_fields_from_pdf(pdf_text) if uploaded_pdf else {}
