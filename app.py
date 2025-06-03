@@ -104,16 +104,16 @@ with tab1:
             gender = st.selectbox("Geslacht", ["", "M", "V", "X"])
         with col2:
             region = st.selectbox(
-                "Regio", ["", "Noord-Holland", "Zuid-Holland", "Utrecht", "Gelderland",
-                          "Friesland", "Drenthe", "Overijssel", "Flevoland", "Limburg",
-                          "Zeeland", "Noord-Brabant", "Amsterdam"]
+                "Regio", ["", "Drenthe", "Flevoland", "Friesland", "Gelderland",
+              "Groningen", "Limburg", "Noord-Brabant", "Noord-Holland",
+              "Overijssel", "Utrecht", "Zeeland", "Zuid-Holland"]
             )
             languages = st.multiselect(
-                "Gesproken talen thuis", [
-                    "Nederlands", "Arabisch", "Pools", "Engels", "Turks", "Tigrinya",
-                    "Spaans", "Frans", "Koerdisch", "Amazigh", "Farsi", "Dari",
-                    "Pashto", "Somalisch", "Tamazight", "Armeens", "Anders"
-                ]
+             "Gesproken talen thuis", [
+                "Amazigh", "Arabisch", "Armeens", "Dari", "Engels", "Farsi", "Frans",
+                "Koerdisch", "Nederlands", "Pashto", "Pools", "Somalisch",
+                "Spaans", "Tamazight", "Tigrinya", "Turks", "Anders"
+            ]
             )
             other_language = st.text_input("Anders, namelijk") if "Anders" in languages else ""
             interpreter_needed = st.radio("Is een tolk nodig?", ["Ja", "Nee"])
